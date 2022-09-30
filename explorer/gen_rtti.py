@@ -120,10 +120,7 @@ class Class:
 
     def Root(self) -> "Class":
         """Returns the root Class of this hierarchy."""
-        if self.kind == Class.Kind.ROOT:
-            return self
-        else:
-            return self.ancestors[0]
+        return self if self.kind == Class.Kind.ROOT else self.ancestors[0]
 
     def _RegisterLeaf(self, leaf: "Class") -> None:
         """Records that `leaf` is derived from self.
@@ -132,8 +129,8 @@ class Class:
         populated, and leaves must be registered in order of ID. This operation
         is idempotent.
         """
-        already_visited = False
         assert leaf.id is not None
+        already_visited = False
         if self.kind == Class.Kind.ROOT:
             if leaf.id == len(self.leaves):
                 self.leaves.append(leaf)
@@ -143,10 +140,7 @@ class Class:
                 already_visited = True
         if self.kind in [Class.Kind.ROOT, Class.Kind.ABSTRACT]:
             if self not in leaf.ancestors:
-                sys.exit(
-                    f"{leaf.name} derived from {self.name}, but has a"
-                    + " different root"
-                )
+                sys.exit(f"{leaf.name} derived from {self.name}, but has a different root")
             if not self.id_range:
                 self.id_range = (leaf.id, leaf.id + 1)
             elif self.id_range[1] == leaf.id:
@@ -155,9 +149,8 @@ class Class:
                 assert self.id_range[1] == leaf.id + 1
                 already_visited = True
 
-        if not already_visited:
-            if self.kind != Class.Kind.ROOT:
-                self.Parent()._RegisterLeaf(leaf)
+        if not already_visited and self.kind != Class.Kind.ROOT:
+            self.Parent()._RegisterLeaf(leaf)
 
     def Finalize(self) -> None:
         """Populates additional attributes for `self` and derived Classes.

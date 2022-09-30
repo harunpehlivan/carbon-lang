@@ -69,7 +69,6 @@ def remap_file(label: str) -> str:
         return path.replace(":", "/")
     assert repo in EXTERNAL_REPOS, repo
     return EXTERNAL_REPOS[repo](path)
-    exit(f"Don't know how to remap label '{label}'")
 
 
 def get_bazel_list(list_child: ElementTree.Element, is_file: bool) -> Set[str]:
@@ -219,9 +218,11 @@ def main() -> None:
     external_rules = get_rules(bazel, external_repo_query, True)
 
     print("Building header map...")
-    header_to_rule_map: Dict[str, Set[str]] = {}
-    header_to_rule_map["gmock/gmock.h"] = {"@com_google_googletest//:gtest"}
-    header_to_rule_map["gtest/gtest.h"] = {"@com_google_googletest//:gtest"}
+    header_to_rule_map: Dict[str, Set[str]] = {
+        "gmock/gmock.h": {"@com_google_googletest//:gtest"},
+        "gtest/gtest.h": {"@com_google_googletest//:gtest"},
+    }
+
     map_headers(header_to_rule_map, carbon_rules)
     map_headers(header_to_rule_map, external_rules)
 
